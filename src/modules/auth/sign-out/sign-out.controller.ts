@@ -1,27 +1,29 @@
 import { signOutUseCase } from './sign-out.use-case';
-import { AuthenticationService } from '@/src/infrastructure/services/authentication.service';
-import { InstrumentationService } from '@/src/infrastructure/services/instrumentation.service';
-import { CrashReporterService } from '@/src/infrastructure/services/crash-reporter.service';
 import { InputParseError } from '@/src/modules/shared/errors/common';
 import { Cookie } from '@/src/modules/shared/models/cookie';
+
+import {
+  getInstrumentationService,
+  getCrashReporterService,
+  getAuthenticationService,
+} from '@/src/service-locator';
 
 export async function signOutController(
   sessionId: string | undefined
 ): Promise<Cookie> {
-  const instrumentationService = new InstrumentationService();
-  const crashReporterService = new CrashReporterService();
+  const instrumentationService = getInstrumentationService();
+  const crashReporterService = getCrashReporterService();
 
   return instrumentationService.startSpan(
     { name: 'signOut Controller' },
     async () => {
       try {
-        // Validate session ID provided
         if (!sessionId) {
           throw new InputParseError('Must provide a session ID');
         }
 
         // Validate session exists
-        const authService = new AuthenticationService();
+        const authService = getAuthenticationService();
         const { session } = await authService.validateSession(sessionId);
 
         // Sign out

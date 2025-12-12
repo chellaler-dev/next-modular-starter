@@ -1,10 +1,10 @@
-// features/auth/sign-out/sign-out.use-case.ts
-import { AuthenticationService } from '@/src/infrastructure/services/authentication.service';
 import { Cookie } from '@/src/modules/shared/models/cookie';
+
+import { getAuthenticationService } from '@/src/service-locator';
 
 export async function signOutUseCase(
   sessionId: string
 ): Promise<{ blankCookie: Cookie }> {
-  const authenticationService = new AuthenticationService();
+  const authenticationService = getAuthenticationService();
   return authenticationService.invalidateSession(sessionId);
 }

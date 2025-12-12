@@ -1,17 +1,16 @@
-// features/todos/delete/delete-todo.use-case.ts
-import { TodosRepository } from '@/src/modules/todos/todos.repository';
 import { UnauthorizedError } from '@/src/modules/shared/errors/auth';
 import { NotFoundError } from '@/src/modules/shared/errors/common';
 import type { Todo } from '@/src/modules/todos/todo.model';
+import type { Transaction } from '@/src/infrastructure/database/drizzle';
 
-import type {Transaction } from '@/src/infrastructure/database/drizzle';
+import { getTodosRepository } from '@/src/service-locator';
 
 export async function deleteTodoUseCase(
   input: { todoId: number },
   userId: string,
   tx?: Transaction
 ): Promise<Todo> {
-  const todosRepository = new TodosRepository();
+  const todosRepository = getTodosRepository();
 
   // Get todo
   const todo = await todosRepository.getTodo(input.todoId);

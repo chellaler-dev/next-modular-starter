@@ -1,4 +1,3 @@
-// services/authentication/authentication.service.ts
 import { generateIdFromEntropySize, Lucia } from 'lucia';
 import { compare } from 'bcrypt-ts';
 
@@ -11,12 +10,14 @@ import { Session, sessionSchema } from '@/src/modules/shared/models/session';
 import { User } from '@/src/modules/auth/user.model';
 
 export class AuthenticationService {
+  private static instance: AuthenticationService;
+
   private lucia: Lucia;
   private usersRepository: UsersRepository;
 
-  constructor() {
-    this.usersRepository = new UsersRepository();
-    
+  private constructor() {
+    this.usersRepository = UsersRepository.getInstance(); // use singleton repo
+
     this.lucia = new Lucia(luciaAdapter, {
       sessionCookie: {
         name: SESSION_COOKIE,
@@ -25,12 +26,15 @@ export class AuthenticationService {
           secure: process.env.NODE_ENV === 'production',
         },
       },
-      getUserAttributes: (attributes) => {
-        return {
-          username: attributes.username,
-        };
-      },
+      getUserAttributes: (attributes) => ({ username: attributes.username }),
     });
+  }
+
+  static getInstance(): AuthenticationService {
+    if (!AuthenticationService.instance) {
+      AuthenticationService.instance = new AuthenticationService();
+    }
+    return AuthenticationService.instance;
   }
 
   async validatePasswords(

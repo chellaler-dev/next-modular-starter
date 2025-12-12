@@ -1,8 +1,8 @@
-// features/todos/list/get-todos-for-user.use-case.ts
-import { TodosRepository } from '@/src//modules/todos/todos.repository';
 import type { Todo } from '@/src/modules/todos/todo.model';
 
+import { getTodosRepository } from '@/src/service-locator';
+
 export async function getTodosForUserUseCase(userId: string): Promise<Todo[]> {
-  const todosRepository = new TodosRepository();
+  const todosRepository = getTodosRepository();
   return todosRepository.getTodosForUser(userId);
 }

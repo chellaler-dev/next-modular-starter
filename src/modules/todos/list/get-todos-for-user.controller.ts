@@ -1,10 +1,12 @@
-// features/todos/list/get-todos-for-user.controller.ts
 import { getTodosForUserUseCase } from './get-todos-for-user.use-case';
-import { AuthenticationService } from '@/src/infrastructure/services/authentication.service';
-import { InstrumentationService } from '@/src/infrastructure/services/instrumentation.service';
-import { CrashReporterService } from '@/src/infrastructure/services/crash-reporter.service';
 import { UnauthenticatedError } from '@/src/modules/shared/errors/auth';
 import type { Todo } from '@/src/modules/todos/todo.model';
+
+import {
+  getAuthenticationService,
+  getInstrumentationService,
+  getCrashReporterService,
+} from '@/src/service-locator';
 
 function presenter(todos: Todo[]) {
   return todos.map((t) => ({
@@ -18,8 +20,8 @@ function presenter(todos: Todo[]) {
 export async function getTodosForUserController(
   sessionId: string | undefined
 ): Promise<ReturnType<typeof presenter>> {
-  const instrumentationService = new InstrumentationService();
-  const crashReporterService = new CrashReporterService();
+  const instrumentationService = getInstrumentationService();
+  const crashReporterService = getCrashReporterService();
 
   return instrumentationService.startSpan(
     { name: 'getTodosForUser Controller' },
@@ -30,7 +32,7 @@ export async function getTodosForUserController(
           throw new UnauthenticatedError('Must be logged in to list todos');
         }
 
-        const authService = new AuthenticationService();
+        const authService = getAuthenticationService();
         const { session } = await authService.validateSession(sessionId);
 
         // Get todos

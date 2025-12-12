@@ -1,6 +1,17 @@
 import { db, Transaction } from '@/src/infrastructure/database/drizzle';
 
-export class TransactionManagerService{
+export class TransactionManagerService {
+  private static instance: TransactionManagerService;
+
+  private constructor() {}
+
+  static getInstance(): TransactionManagerService {
+    if (!TransactionManagerService.instance) {
+      TransactionManagerService.instance = new TransactionManagerService();
+    }
+    return TransactionManagerService.instance;
+  }
+
   public startTransaction<T>(
     clb: (tx: Transaction) => Promise<T>,
     parent?: Transaction

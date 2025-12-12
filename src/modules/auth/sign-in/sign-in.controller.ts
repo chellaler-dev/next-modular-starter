@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
 import { signInUseCase } from './sign-in.use-case';
-import { InstrumentationService } from '@/src/infrastructure/services/instrumentation.service';
-import { CrashReporterService } from '@/src/infrastructure/services/crash-reporter.service';
 import { InputParseError } from '@/src/modules/shared/errors/common';
 import type { Cookie } from '@/src/modules/shared/models/cookie';
+
+import {
+  getInstrumentationService,
+  getCrashReporterService,
+} from '@/src/service-locator';
 
 const inputSchema = z.object({
   username: z.string().min(3).max(31),
@@ -14,8 +17,8 @@ const inputSchema = z.object({
 export async function signInController(
   input: Partial<z.infer<typeof inputSchema>>
 ): Promise<Cookie> {
-  const instrumentationService = new InstrumentationService();
-  const crashReporterService = new CrashReporterService();
+  const instrumentationService = getInstrumentationService();
+  const crashReporterService = getCrashReporterService();
 
   return instrumentationService.startSpan(
     {
@@ -25,21 +28,18 @@ export async function signInController(
     },
     async () => {
       try {
-        // Validate input
         const { data, error: inputParseError } = inputSchema.safeParse(input);
 
         if (inputParseError) {
           throw new InputParseError('Invalid data', { cause: inputParseError });
         }
 
-        // Execute use case (wrapped in instrumentation)
         const { cookie } = await signInUseCase(data);
 
         return cookie;
       } catch (error) {
-        // Report errors once at the top level
         crashReporterService.report(error);
-        throw error; // Re-throw for Next.js action to handle
+        throw error;
       }
     }
   );
